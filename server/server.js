@@ -3,8 +3,11 @@ import cors from "cors";
 import 'dotenv/config';
 import cookieParser from "cookie-parser";
 
+import connectdb from "./db/db.js";
+
 const app = express();
 const port = process.env.PORT || 4000;
+connectdb();
 
 app.use(express.json());
 app.use(cookieParser());
