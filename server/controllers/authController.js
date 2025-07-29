@@ -138,3 +138,10 @@ export const verifyEmail = TryCatch(async (req, res) => {
     message: "Account verfied",
   });
 });
+
+export const isAuthenticated = TryCatch(async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "User is Authenticated",
+  });
+});
