@@ -70,7 +70,7 @@ export const logOutUser = TryCatch(async (req, res) => {
 });
 
 export const sendVerifyOtp = TryCatch(async (req, res) => {
-  const { userId } = req.body;
+  const userId = req.userId;
   const user = await User.findById(userId);
 
   if (user.isAccountVerified) {
@@ -86,7 +86,7 @@ export const sendVerifyOtp = TryCatch(async (req, res) => {
 
   await user.save();
 
-  sendVerficationOtp(email, otp);
+  sendVerficationOtp(user.email, otp);
 
   res.status(200).json({
     success: true,
@@ -95,7 +95,8 @@ export const sendVerifyOtp = TryCatch(async (req, res) => {
 });
 
 export const verifyEmail = TryCatch(async (req, res) => {
-  const { userId, otp } = req.body;
+  const { otp } = req.body;
+  const userId = req.userId;
 
   if (!userId || !otp) {
     return res.status(400).json({
@@ -131,7 +132,7 @@ export const verifyEmail = TryCatch(async (req, res) => {
   user.verifyotp = "";
   user.verifyotpExpireAt = 0;
   await user.save();
-  
+
   res.status(200).json({
     success: true,
     message: "Account verfied",
