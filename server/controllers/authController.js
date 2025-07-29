@@ -2,6 +2,7 @@ import TryCatch from "../utils/TryCatch.js";
 import { User } from "../models/userModel.js";
 import { generateToken } from "../utils/GenerateToken.js";
 import { deleteToken } from "../utils/DeleteToken.js";
+import { sendEmail } from "../utils/SendEmail.js";
 import bcrypt from "bcryptjs";
 
 export const register = TryCatch(async (req, res) => {
@@ -24,6 +25,8 @@ export const register = TryCatch(async (req, res) => {
   });
 
   generateToken(user, res);
+
+  sendEmail(email);
 
   res.status(200).json({
     success: true,
