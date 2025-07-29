@@ -2,7 +2,7 @@ import TryCatch from "../utils/TryCatch.js";
 import { User } from "../models/userModel.js";
 import { generateToken } from "../utils/GenerateToken.js";
 import { deleteToken } from "../utils/DeleteToken.js";
-import { sendEmail } from "../utils/SendEmail.js";
+import { sendWelcomeEmail, sendVerficationOtp } from "../utils/SendEmail.js";
 import bcrypt from "bcryptjs";
 
 export const register = TryCatch(async (req, res) => {
@@ -26,7 +26,7 @@ export const register = TryCatch(async (req, res) => {
 
   generateToken(user, res);
 
-  sendEmail(email);
+  sendWelcomeEmail(email);
 
   res.status(200).json({
     success: true,
@@ -66,5 +66,30 @@ export const logOutUser = TryCatch(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Logged out",
+  });
+});
+
+export const sendVerifyOtp = TryCatch(async (req, res) => {
+  const { userId } = req.body;
+  const user = await User.findById(userId);
+
+  if (user.isAccountVerified) {
+    return res.status(200).json({
+      message: "Account already verfied",
+    });
+  }
+
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+  user.verifyotp = otp;
+  user.verifyotpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+
+  await user.save();
+
+  sendVerficationOtp(email, otp);
+
+  res.status(200).json({
+    success: true,
+    message: "Verification OTP sent on Email",
   });
 });
