@@ -183,3 +183,51 @@ export const sendResetOtp = async (req, res) => {
     message: "Reset OTP sent to email",
   });
 };
+
+export const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Email, Otp, New Password are required",
+    });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  if (user.resetotpExpireAt < Date.now()) {
+    return res.status(400).json({
+      success: false,
+      message: "OTP expired",
+    });
+  }
+
+  if (user.resetotp === "" || user.resetotp !== otp) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid OTP",
+    });
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+
+  user.resetotpExpireAt = 0;
+  user.resetotp = "";
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password Successfully reset",
+  });
+};
