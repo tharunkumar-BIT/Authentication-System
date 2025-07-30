@@ -21,3 +21,14 @@ export const sendVerficationOtp = async (email, otp) => {
 
   await transporter.sendMail(mailOptions);
 };
+
+export const sendPasswordResetOtp = async (email, otp) => {
+  const mailOptions = {
+    from: process.env.SENDER_EMAIL,
+    to: email,
+    subject: "Password Reset OTP",
+    text: `Your OTP is ${otp}. Reset your password using this OTP.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

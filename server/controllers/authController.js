@@ -2,7 +2,11 @@ import TryCatch from "../utils/TryCatch.js";
 import { User } from "../models/userModel.js";
 import { generateToken } from "../utils/GenerateToken.js";
 import { deleteToken } from "../utils/DeleteToken.js";
-import { sendWelcomeEmail, sendVerficationOtp } from "../utils/SendEmail.js";
+import {
+  sendWelcomeEmail,
+  sendVerficationOtp,
+  sendPasswordResetOtp,
+} from "../utils/SendEmail.js";
 import bcrypt from "bcryptjs";
 
 export const register = TryCatch(async (req, res) => {
@@ -145,3 +149,37 @@ export const isAuthenticated = TryCatch(async (req, res) => {
     message: "User is Authenticated",
   });
 });
+
+export const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email ID required",
+    });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+  user.resetotp = otp;
+  user.resetotpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+
+  await user.save();
+
+  sendPasswordResetOtp(email, otp);
+
+  res.status(200).json({
+    success: true,
+    message: "Reset OTP sent to email",
+  });
+};
