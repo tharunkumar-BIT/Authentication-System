@@ -11,9 +11,11 @@ const app = express();
 const port = process.env.PORT || 4000;
 connectdb();
 
+const allowedOrigins = ["http://localhost:5173"];
+
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 app.get("/", (req, res) => res.send("API Working"));
 app.use("/api/auth", authRouter);
