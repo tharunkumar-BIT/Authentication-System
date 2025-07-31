@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets.js";
 import { useNavigate } from "react-router-dom";
+import { AppContent } from "../context/AppContext.jsx";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const { backendUrl } = useContext(AppContent);
 
   const [state, setState] = useState("Sign Up");
   const [name, setName] = useState("");
