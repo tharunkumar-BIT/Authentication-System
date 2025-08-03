@@ -150,20 +150,12 @@ export const isAuthenticated = TryCatch(async (req, res) => {
   });
 });
 
-export const sendResetOtp = async (req, res) => {
+export const sendResetOtp = TryCatch(async (req, res) => {
   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({
-      success: false,
-      message: "Email ID required",
-    });
-  }
-
   const user = await User.findOne({ email });
-
   if (!user) {
-    return res.status(400).json({
+    return res.status(404).json({
       success: false,
       message: "User not found",
     });
@@ -172,30 +164,29 @@ export const sendResetOtp = async (req, res) => {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
 
   user.resetotp = otp;
-  user.resetotpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
-
+  user.resetotpExpireAt = Date.now() + 15 * 60 * 1000; // 15 min
   await user.save();
 
-  sendPasswordResetOtp(email, otp);
+  sendPasswordResetOtp(user.email, otp);
 
   res.status(200).json({
     success: true,
-    message: "Reset OTP sent to email",
+    message: "Password reset OTP sent to email",
   });
-};
+});
 
-export const verifyResetOtp = async (req, res) => {
-  const { otp } = req.body;
-  const userId = req.userId;
 
-  if (!userId || !otp) {
+export const verifyResetOtp = TryCatch(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
     return res.status(400).json({
       success: false,
       message: "Missing details",
     });
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(404).json({
@@ -204,7 +195,7 @@ export const verifyResetOtp = async (req, res) => {
     });
   }
 
-  if (user.resetotp === "" || user.resetotp !== otp) {
+  if (!user.resetotp || user.resetotp !== otp) {
     return res.status(400).json({
       success: false,
       message: "Incorrect OTP",
@@ -222,7 +213,8 @@ export const verifyResetOtp = async (req, res) => {
     success: true,
     message: "OTP verified",
   });
-};
+});
+
 
 export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
